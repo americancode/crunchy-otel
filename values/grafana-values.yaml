@@ -1,0 +1,21 @@
+adminUser: admin
+adminPassword: admin123
+service:
+  type: NodePort
+  nodePort: 30000
+grafana.ini:
+  auth.anonymous:
+    enabled: true
+    org_role: Admin
+  server:
+    root_url: http://localhost:30000
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.loki.svc.cluster.local
+        isDefault: true
+        editable: true

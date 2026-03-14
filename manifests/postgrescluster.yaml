@@ -1,0 +1,60 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: pg-logs
+  namespace: postgres
+spec:
+  postgresVersion: 16
+  users:
+    - name: app
+      databases:
+        - app
+  instances:
+    - name: instance1
+      replicas: 1
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+  backups:
+    pgbackrest:
+      repos:
+        - name: repo1
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 2Gi
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        parameters:
+          log_min_messages: "info"
+          log_connections: "on"
+          log_disconnections: "on"
+          log_statement: "all"
+  instrumentation:
+    config:
+      exporters:
+        otlp:
+          endpoint: "alloy.loki.svc.cluster.local:4317"
+          tls:
+            insecure: true
+    logs:
+      exporters:
+        - otlp
+      batches:
+        minRecords: 1
+        maxRecords: 32
+        maxDelay: 5s

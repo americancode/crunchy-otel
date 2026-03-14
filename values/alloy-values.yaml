@@ -1,0 +1,49 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      logging {
+        level = "info"
+        format = "logfmt"
+      }
+
+      otelcol.receiver.otlp "crunchy" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+        output {
+          logs = [otelcol.processor.batch.crunchy.input]
+        }
+      }
+
+      otelcol.processor.batch "crunchy" {
+        output {
+          logs = [otelcol.exporter.otlphttp.loki.input]
+        }
+      }
+
+      otelcol.exporter.otlphttp "loki" {
+        client {
+          endpoint = "http://loki-gateway.loki.svc.cluster.local/otlp"
+        }
+      }
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+controller:
+  type: deployment
+serviceAccount:
+  create: true
+rbac:
+  create: true
+crds:
+  create: false
