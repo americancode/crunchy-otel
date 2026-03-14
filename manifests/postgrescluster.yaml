@@ -11,6 +11,18 @@ spec:
         - app
   instances:
     - name: instance1
+      metadata:
+        annotations:
+          monitoring-crunchy/psa-profile: restricted
+      sidecars:
+        replicaCertCopy:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
       replicas: 1
       resources:
         requests:
@@ -27,6 +39,22 @@ spec:
             storage: 2Gi
   backups:
     pgbackrest:
+      jobs:
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+      repoHost:
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
       repos:
         - name: repo1
           volume:
@@ -36,6 +64,23 @@ spec:
               resources:
                 requests:
                   storage: 2Gi
+      sidecars:
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+        pgbackrestConfig:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
   patroni:
     dynamicConfiguration:
       postgresql:
@@ -45,6 +90,13 @@ spec:
           log_disconnections: "on"
           log_statement: "all"
   instrumentation:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
     config:
       exporters:
         otlp:
